@@ -1,18 +1,13 @@
 const mysql = require("mysql");
 const bcrypt = require("bcrypt");
 
-// const pool = mysql.createPool({
-//     host: 'localhost',
-//     user: 'root',
-//     password: 'Akanksha@481',
-//     database: 'accredian',
-//   });
+
 
 const connection = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "Akanksha@481",
-  database: "accredian",
+  database: "accredian_database",
 });
 
 connection.connect((err) => {
@@ -48,9 +43,6 @@ const login = async (req, res, next) => {
     }
 
     const user = userRows[0];
-    console.log("Line 51", user)
-    console.log("Line 52", user.password)
-    console.log("Line 53", password[0])
     const isPasswordValid = await bcrypt.compare(password[0], user.password);
 
     if (!isPasswordValid) {
@@ -66,14 +58,12 @@ const login = async (req, res, next) => {
 
 const register = async (req, res, next) => {
   try {
-    console.log(req.body);
     const { username, email, password } = req.body;
 
     const usernameRows = await executeQuery(
       "SELECT * FROM Login WHERE username = ?",
       [username]
     );
-    console.log(usernameRows.length);
     if (usernameRows.length > 0) {
       return res.status(409).json({ msg: "Username already used", status: false });
     }
@@ -81,13 +71,10 @@ const register = async (req, res, next) => {
       "SELECT * FROM Login WHERE email = ?",
       [email]
     );
-    console.log("Line 82", emailRows.length);
     if (emailRows.length > 0) {
       return res.status(409).json({ msg: "Email already used", status: false });
     }
-    console.log("ine 86", password)
     const hashedPassword = await bcrypt.hash(password[0], 10);
-    console.log("Line 88 ", hashedPassword, password)
     const result = await executeQuery(
       "INSERT INTO Login (email, username, password) VALUES (?, ?, ?)",
       [email, username, hashedPassword]
